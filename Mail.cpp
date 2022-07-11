@@ -1,11 +1,18 @@
 #include "Mail.h"
+int Mail::Mail_Value = 1;
 
-
-Mail::Mail(string Date, string Send_From, string Send_To, string Subject, string Content, int Mail_Value) : m_Date(Date), m_Send_From(Send_From), m_Send_To(Send_To), m_Subject(Subject), m_Content(Content) //ctor
+Mail::Mail(string Date, string Send_From, string Send_To, string Subject, string Content) : m_Date(Date), m_Send_From(Send_From), m_Send_To(Send_To), m_Subject(Subject), m_Content(Content)//ctor
 {
+	Mail_special_num = Mail_Value;
+	Mail_Value++;
 }
 Mail::~Mail()
 {
+	delete &m_Content;
+	delete& m_Date;
+	delete& m_Send_From;
+	delete& m_Send_To;
+	delete& m_Subject;
 
 }
 string Mail::get_Date() const
@@ -28,7 +35,8 @@ string Mail::get_Content() const
 {
 	return m_Content;
 }
-int Mail::get_Mail_Value() const
+ostream& operator<<(ostream& os, const Mail& c)
 {
-	return Mail_Value;
+	os << c.get_Content() <<endl;
+	return os;
 }
