@@ -4,33 +4,37 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include "Contact.h"
+#include "Folder.h"
+#include "Application.h"
+#include "Mail.h"
 using namespace std;
 class Contacts
 {
 public:
-	//friend class Contact;
+	friend class Mail;
+	friend class Folder;
+	friend class Contact;
+	friend class Application;
 	Contacts();
 	~Contacts();
-	Add(string name, string address);
-	Remove(string name);
+	Contact* Remove(string name);
+	void Add(string name, string address);
 
 protected:
-	Contact** contact_list;
+	vector<Contact> contact_list;
 };
 class Rlist:Contacts
 {
 public:
-	Rlist():Contacts(){};
+	Rlist(string name);
 	~Rlist();
-	//Add(string list_name);
-	//Remove(string name);
-	//List();
-	AddToList(string name, string address);
-	RemoveFromList(string name, string address);
+	void AddToList(string name, string address);
+	void RemoveFromList(string name, string address);
 
 protected:
 	string list_name;
-	Contacts** rlist_contacts_list;
 };
 #endif
+
