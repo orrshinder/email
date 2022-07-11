@@ -5,17 +5,25 @@
 #include <iostream>
 #include <string>
 #include "Mail.h"
-#include "LinkedList.h"
+#include "Application.h"
+#include "Contacts.h"
+#include <vector>
 
 using namespace std;
 class Folder
 {
+	friend class Mail;
+	friend class Contacts;
+	friend class Contact;
+	friend class Application;
 	Folder(string m_name);
 	~Folder();
+	void Move(Mail* mail);
+	Mail* Remove(Mail* mail);
 
 
 protected:
 	string m_name;
-	LinkedList mail_list;
+	vector<Mail> mail_list;
 };
 #endif
