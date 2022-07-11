@@ -8,11 +8,16 @@
 #include "Contacts.h"
 #include "Folder.h"
 #include "Mail.h"
-
+#include <fstream>
+using namespace std;
 
 class Application
 {
 public:
+	friend class Mail;
+	friend class Contacts;
+	friend class Contact;
+	friend class Folder;
 	Application();
 	~Application();
 	void Compose();
@@ -29,11 +34,13 @@ public:
 	void MkDir(string new_folder);
 	void RmDir(string folder_name);
 	void ListDir();
-
+	void main_screen();
+	void seralization(ofstream& ofs);
+	void deseralization(ifstream& ofs);
 
 protected:
-	Folder** mail_folders;
-	string my_mail = "orrshinder@gmail.com";
+	vector<Folder> mail_folders;
+	const string my_mail = "orrshinder@gmail.com";
 
 };
 
