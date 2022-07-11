@@ -1,9 +1,44 @@
 #include "Application.h"
+#include <time.h>
+#include <fstream>
 Application::Application()
 {
+	mail_folders.resize(0);
+	string date = __DATE__;
+	ifstream my_file;
+	my_file.open("app.txt");
+	deseralization(my_file);
+	my_file.close();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	ofstream my_file1;
+	my_file1.open("app.text", ios::trunc);
+	my_file1.close();
 
 }
 Application::~Application()
+{
+
+}
+void Application::main_screen()
 {
 
 }
@@ -60,6 +95,14 @@ void Application::RmDir(string folder_name)
 
 }
 void Application::ListDir()
+{
+
+}
+void Application::seralization(ofstream& ofs)
+{
+
+}
+void Application::deseralization(ifstream& ifs)
 {
 
 }
