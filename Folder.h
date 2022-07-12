@@ -20,7 +20,9 @@ class Folder
 	~Folder();
 	void Move(Mail* mail);
 	Mail* Remove(Mail* mail);
-
+	void Add_old_mail(Mail* mail);
+	void Add_new_mail(Mail* mail);
+	void seralization(ofstream& ofs);
 
 protected:
 	string m_name;
