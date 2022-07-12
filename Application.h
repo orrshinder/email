@@ -9,8 +9,11 @@
 #include "Folder.h"
 #include "Mail.h"
 #include <fstream>
+#include <ostream>
 using namespace std;
-
+#define _CRTDBG_MAP_ALLOC
+#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#define new DBG_NEW
 class Application
 {
 public:
@@ -40,6 +43,7 @@ public:
 
 protected:
 	vector<Folder> mail_folders;
+	vector<Contacts> mail_contacts;
 	const string my_mail = "orrshinder@gmail.com";
 
 };
