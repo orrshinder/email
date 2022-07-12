@@ -5,6 +5,10 @@
 #include <iostream>
 #include <string>
 #include "Contacts.h"
+#include <ostream>
+#define _CRTDBG_MAP_ALLOC
+#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#define new DBG_NEW
 using namespace std;
 class Contact
 {
@@ -13,11 +17,11 @@ public:
 	friend class Folder;
 	friend class Contacts;
 	friend class Application;
+	Contact();
 	Contact(string name,string address);
 	~Contact();
 	string get_name() const;
 	string get_address() const;
-
 protected:
 	string m_name;
 	string m_address;
