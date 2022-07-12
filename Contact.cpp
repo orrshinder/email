@@ -5,6 +5,11 @@ Contact::Contact(string name, string address)
 	m_name = name;
 	m_address = address;
 }
+Contact::Contact()
+{
+	m_name ="";
+	m_address ="";
+}
 Contact::~Contact()
 {
 
