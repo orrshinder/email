@@ -9,7 +9,11 @@
 #include "Folder.h"
 #include "Application.h"
 #include "Mail.h"
+#include <ostream>
 using namespace std;
+#define _CRTDBG_MAP_ALLOC
+#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#define new DBG_NEW
 class Contacts
 {
 public:
@@ -21,20 +25,21 @@ public:
 	~Contacts();
 	Contact* Remove(string name);
 	void Add(string name, string address);
+	void seralization(ofstream& ofs);
 
 protected:
 	vector<Contact> contact_list;
 };
-class Rlist:Contacts
+class Rlist:public Contacts
 {
 public:
 	Rlist(string name);
 	~Rlist();
 	void AddToList(string name, string address);
 	void RemoveFromList(string name, string address);
+	void seralization(ofstream& ofs);
 
 protected:
 	string list_name;
 };
 #endif
-
