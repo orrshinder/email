@@ -25,12 +25,16 @@ Contact* Contacts::Remove(string name)
 }
 void Contacts::Add(string name, string address)
 {
-	auto it = contact_list.emplace(contact_list.begin(), &Contact(name, address));
+	Contact* temp = new Contact(name, address);
+	//contact_list.emplace(contact_list.begin(),temp);
+	contact_list.insert(contact_list.begin(), *temp);
 }
 
 void Rlist::AddToList(string name, string address)
 {
-	contact_list.emplace(contact_list.begin(), &Contact(name, address));
+	Contact* temp = new Contact(name, address);
+	//contact_list.emplace(contact_list.begin(),temp);
+	contact_list.insert(contact_list.begin(), *temp);
 }
 void Rlist::RemoveFromList(string name, string address)
 {
@@ -47,5 +51,21 @@ Rlist::~Rlist()
 Rlist::Rlist(string name):Contacts()
 {
 	list_name = name;
+}
+void Contacts::seralization(ofstream& ofs)
+{
+	ofs << "contacts:" << endl;
+	for (auto it = contact_list.begin(); it != contact_list.end(); ++it)
+	{
+		ofs << it->get_name() << "," << it->get_address() << endl;
+	}
+}
+void Rlist::seralization(ofstream& ofs)
+{
+	ofs << "contact list:" << this->list_name << endl;
+	for (auto it = contact_list.begin(); it != contact_list.end(); ++it)
+	{
+		ofs << it->get_name() << "," << it->get_address() << endl;
+	}
 }
 
