@@ -7,11 +7,13 @@
 #include "Mail.h"
 #include "Application.h"
 #include "Contacts.h"
+#include "Contact.h"
 #include <vector>
 
 using namespace std;
 class Folder
 {
+public:
 	friend class Mail;
 	friend class Contacts;
 	friend class Contact;
