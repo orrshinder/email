@@ -1,8 +1,8 @@
 #include "Mail.h"
-int Mail::Mail_Value = 1;
 
 Mail::Mail(string Date, string** Send_From, string** Send_To, string Subject, string Content, int mail_id) : m_Date(Date),m_Subject(Subject), m_Content(Content),Mail_special_num(mail_id)//ctor
 {
+
 	int size = *(&Send_From + 1) - Send_From;
 	m_Send_From = new string * [size];
 	for (int i = 0; i < size; i++)
@@ -15,14 +15,24 @@ Mail::Mail(string Date, string** Send_From, string** Send_To, string Subject, st
 	{
 		m_Send_To[i] = Send_To[i];
 	}
-	Mail_Value++;
+
+}
+Mail::Mail()
+{
+	
+	m_Date="";
+	m_Send_From=nullptr;
+	m_Send_To=nullptr;
+	m_Subject="";
+	m_Content="";
+	Mail_special_num=0;
 }
 Mail::~Mail()
 {
 	delete &m_Content;
 	delete& m_Date;
-	delete& m_Send_From;
-	delete& m_Send_To;
+	delete[] m_Send_From;
+	delete[] m_Send_To;
 	delete& m_Subject;
 
 }
@@ -59,6 +69,7 @@ string* Sent_mail::get_Send_To() const
 {
 	return *m_Send_To;
 }
+
 int Mail::get_uniqe_id() const
 {
 	return Mail_special_num;
