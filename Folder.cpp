@@ -8,13 +8,17 @@ Folder::Folder(string name)
 }
 Folder::~Folder()
 {
+	for (auto it = mail_list.begin(); it != mail_list.end(); ++it)
+	{
+		it->~Mail();
+	}
 	mail_list.clear();
 	mail_list.~vector();
 	m_name = "";
 }
 void Folder::Move(Mail* mail)
 {
-	mail_list.emplace(mail_list.begin(), &mail);
+	mail_list.emplace(mail_list.begin(), &mail);//problem
 }
 
 
@@ -48,4 +52,3 @@ void Folder::Add_new_mail(Mail* mail)
 {
 	mail_list.insert(mail_list.begin(), *mail);
 }
-
