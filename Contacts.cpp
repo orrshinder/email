@@ -4,9 +4,20 @@
 Contacts::Contacts()
 {
 	contact_list.resize(0);
+	list_name = "";
+}
+Contacts::Contacts(string name)
+{
+	contact_list.resize(0);
+	list_name = name;
+}
+string Contacts::name_list()const
+{
+	return list_name;
 }
 Contacts::~Contacts()
 {
+	contact_list.clear();
 	contact_list.~vector();
 }
 Contact* Contacts::Remove(string name)
@@ -48,10 +59,7 @@ Rlist::~Rlist()
 {
 	contact_list.~vector();
 }
-Rlist::Rlist(string name):Contacts()
-{
-	list_name = name;
-}
+
 void Contacts::seralization(ofstream& ofs)
 {
 	ofs << "contacts:" << endl;
@@ -68,4 +76,11 @@ void Rlist::seralization(ofstream& ofs)
 		ofs << it->get_name() << "," << it->get_address() << endl;
 	}
 }
-
+ostream& operator<<(ostream& os, const Contacts& c)
+{
+	for (auto it = c.contact_list.begin(); it != c.contact_list.end(); ++it)
+	{
+		os << it->get_address() << "  " << it->get_name() << endl;
+	}
+	return os;
+}
