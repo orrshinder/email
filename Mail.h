@@ -21,6 +21,7 @@ public:
 	friend class Contact;
 	friend class Application;
 	Mail(string date, string** send_From, string** send_To, string subject, string content, int mail_id);
+	Mail();
 	virtual ~Mail();
 	string get_Date() const;
 	virtual string* get_Send_From() const=0;
@@ -39,8 +40,6 @@ protected:
 	string  m_Subject;
 	string  m_Content;
 	int Mail_special_num;
-	static int Mail_Value;
-
 
 };
 
@@ -52,6 +51,7 @@ public:
 	~Recived_mail() {};
 	string* get_Send_From() const;
 	string* get_Send_To() const;
+
 };
 
 class Sent_mail: public Mail
