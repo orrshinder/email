@@ -22,24 +22,27 @@ public:
 	friend class Contact;
 	friend class Application;
 	Contacts();
+	Contacts(string name);
 	~Contacts();
 	Contact* Remove(string name);
 	void Add(string name, string address);
+	string name_list() const;
 	void seralization(ofstream& ofs);
-
+	friend ostream& operator<<(ostream& os, const Contacts& c);
 protected:
 	vector<Contact> contact_list;
+	string list_name;
 };
 class Rlist:public Contacts
 {
 public:
-	Rlist(string name);
+	Rlist(string name):Contacts(name){};
 	~Rlist();
 	void AddToList(string name, string address);
 	void RemoveFromList(string name, string address);
 	void seralization(ofstream& ofs);
-
-protected:
-	string list_name;
 };
 #endif
+
+
+
