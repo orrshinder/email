@@ -24,20 +24,20 @@ public:
 	Application();
 	~Application();
 	void Compose();
-	void Add(string name);
-	void Remove(string name);
-	void List();
-	void AddToList(string rlist_name);
-	void RemoveFromList(string rlist_name);
-	void Back();
-	void Search(string search_text);
-	void Move(int id_mail, string folder);
-	void More(string folder_name);
-	void CD(string folder_name);
-	void MkDir(string new_folder);
-	void RmDir(string folder_name);
+	void Remove();
+	void List(string folder_name);
+	void Search();
+	void Move();
+	void More(int flag, string folder_name);
+	void CD();
+	void MkDir();
+	void RmDir();
 	void ListDir();
+	void contacts();
 	void main_screen();
+	void rlist();
+	string option();
+	void Print();
 	void seralization(ofstream& ofs);
 	void deseralization(ifstream& ofs);
 
@@ -45,6 +45,7 @@ protected:
 	vector<Folder> mail_folders;
 	vector<Contacts> mail_contacts;
 	const string my_mail = "orrshinder@gmail.com";
+	static int Mail_Value;
 
 };
 
