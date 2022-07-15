@@ -24,13 +24,18 @@ public:
 	Contacts();
 	Contacts(string name);
 	~Contacts();
-	Contact* Remove(string name);
+	void Remove(Contact* person);
 	void Add(string name, string address);
 	string name_list() const;
 	void seralization(ofstream& ofs);
 	friend ostream& operator<<(ostream& os, const Contacts& c);
+	bool operator ==(const Contacts* other);
+	Contact* find_contact(string name);
+	bool contact_exsit(string name);
+	int size_list()const;
+
 protected:
-	vector<Contact> contact_list;
+	vector<Contact*> contact_list;
 	string list_name;
 };
 class Rlist:public Contacts
@@ -38,6 +43,7 @@ class Rlist:public Contacts
 public:
 	Rlist(string name):Contacts(name){};
 	~Rlist();
+	void delete_contact(Contact* person);
 	void AddToList(string name, string address);
 	void RemoveFromList(string name, string address);
 	void seralization(ofstream& ofs);
