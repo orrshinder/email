@@ -5,50 +5,157 @@
 Folder::Folder(string name)
 {
 	m_name = name;
+	mail_list = new Mail * [0];
+	m_size = 0;
+	m_top = 0;
 }
 Folder::~Folder()
 {
-	for (auto it = mail_list.begin(); it != mail_list.end(); ++it)
+	for (int i = 0; i < m_size; i++)
 	{
-		it->~Mail();
+		delete mail_list[i];
 	}
-	mail_list.clear();
-	mail_list.~vector();
-	m_name = "";
-}
-void Folder::Move(Mail* mail)
-{
-	mail_list.emplace(mail_list.begin(), &mail);//problem
 }
 
 
-Mail* Folder::Remove(Mail* mail)
+
+void Folder::Remove(Mail* mail)
 {
-	int counter = 0;
-	for (auto it = mail_list.begin(); it != mail_list.end(); ++it)
+	unsigned index = 0;
+	if (isEmpty())
 	{
-		if (mail->get_uniqe_id() == it->get_uniqe_id())
+		cout << "folder nothing to pop." << endl;
+	}
+	else
+	{
+		for (int i = 0; i < m_top; i++)
 		{
-			Mail* x = &mail_list.at(counter);
-			mail_list.erase(it);
-			return x;
+			if (mail_list[i] == mail)
+			{
+				index = i;
+
+				break;
+			}
 		}
-		counter++;
+		for (unsigned j = index; j < m_top - 1; j++)
+		{
+			mail_list[j] = mail_list[j + 1];
+		}
+		m_top--;
+		m_size--;
 	}
 }
 void  Folder::seralization(ofstream& ofs)
 {
 	ofs <<"Folder:" << this->m_name << endl;
-	for (auto it = mail_list.begin(); it != mail_list.end(); ++it)
-	{
-		it->seralization(ofs);
+	for (int i = 0; i < m_top; i++)
+	{ 
+		Mail* temp = mail_list[i];
+		temp->seralization(ofs);
+		
 	}
 }
 void Folder::Add_old_mail(Mail* mail)
 {
-	mail_list.push_back(*mail);
+	push_back(mail);
 }
 void Folder::Add_new_mail(Mail* mail)
 {
-	mail_list.insert(mail_list.begin(), *mail);
+	push(mail);
+}
+bool Folder::operator ==(const Folder* other)
+{
+	if (this->m_name == other->m_name && this->mail_list == other->mail_list)
+	{
+		return true;
+	}
+	return false;
+}
+
+void Folder::push(Mail* c)
+{
+	if (mail_list)
+	{
+		if (isEmpty())
+		{
+			mail_list[0] = (c);
+			m_top++;
+		}
+		else
+		{
+			Mail** temp = new Mail * [m_size];
+			for (int i = 0; i < m_size; i++) {
+				temp[i] = mail_list[i];
+			}
+			for (int i = 0; i < m_size; i++) {
+				mail_list[i + 1] = temp[i];
+			}
+			mail_list[0] = (c);
+			m_top++;
+		}
+	}
+	else
+	{
+		Mail** temp = new Mail * [m_size];
+		for (int i = 0; i < m_size; i++) {
+			temp[i] = (mail_list[i]);
+		}
+		mail_list = new  Mail * [m_size + 1];;
+		for (int j = 0; j < (int)m_size; j++) {
+			mail_list[j + 1] = temp[j];
+		}
+		mail_list[0] = c;
+		//delete temp;
+		m_size = m_size + 1;
+		m_top++;
+	}
+}
+void Folder::push_back(Mail* c)
+{
+	if (!isFull())
+	{
+		if (isEmpty())
+		{
+			mail_list[m_top] = (c);
+			m_top++;
+		}
+		else
+		{
+			Mail** temp = new Mail * [m_size];
+			for (int i = 0; i < m_size; i++) {
+				temp[i] = mail_list[i];
+			}
+			for (int i = 1; i < m_size; i++) {
+				mail_list[i-1] = temp[i];
+			}
+			mail_list[m_top] = (c);
+			m_top++;
+		}
+	}
+	else
+	{
+		Mail** temp = new Mail * [m_size];
+		for (int i = 0; i < m_size; i++) {
+			temp[i] = (mail_list[i]);
+		}
+		mail_list = new  Mail * [m_size + 1];;
+		for (int j = 1; j < (int)m_size; j++) {
+			mail_list[j-1] = temp[j];
+		}
+		mail_list[m_top] = c;
+		m_size = m_size + 1;
+		m_top++;
+	}
+}
+bool Folder::isEmpty()
+{
+	return m_top == 0;
+}
+bool Folder::isFull() const // returns true if stack is full
+{
+	return m_size == m_top;
+}
+unsigned Folder::size() const
+{
+	return m_size;
 }
