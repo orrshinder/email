@@ -22,6 +22,8 @@ public:
 	~Contact();
 	string get_name() const;
 	string get_address() const;
+	bool operator ==(const Contact& other);
+	bool operator !=(const Contact& other);
 protected:
 	string m_name;
 	string m_address;
