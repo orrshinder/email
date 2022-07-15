@@ -22,3 +22,21 @@ string Contact::get_address() const
 {
 	return m_address;
 }
+bool Contact::operator ==(const Contact& other)
+{
+	if ((this->get_name() == other.get_name()) && (this->get_address() == other.get_address()))
+	{
+		return true;
+	}
+	return false;
+	
+}
+bool Contact::operator !=(const Contact& other)
+{
+	if ((this->get_name() != other.get_name()) || (this->get_address() != other.get_address()))
+	{
+		return true;
+	}
+	return false;
+
+}
