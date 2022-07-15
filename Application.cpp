@@ -1,11 +1,17 @@
 #include "Application.h"
 #include <time.h>
 #include <fstream>
-int static Mail_Value = 1;
+//int static Mail_Value = 1;
 
 Application::Application()
 {
-	//mail_folders.resize(0);
+	Mail_Value = 1;
+	m_size_contacts=0;
+	m_top_contacts=0;
+	m_size_folders=0;
+	m_top_folders=0;
+	mail_folders = new Folder * [0];
+	mail_contacts = new Contacts * [0];
 	string date = __DATE__;
 	ifstream my_file;
 	my_file.open("app.txt");
@@ -21,10 +27,20 @@ Application::Application()
 }
 Application::~Application()
 {
-	mail_contacts.clear();
-	mail_contacts.~vector();
-	mail_folders.clear();
-	mail_folders.~vector();
+	for (int i = 0; i < m_size_folders; i++)
+	{
+		if (mail_folders[i] != nullptr)
+		{
+			delete[] mail_folders[i];
+		}
+	}
+	for (int i = 0; i < m_size_contacts; i++)
+	{
+		if (mail_contacts[i] != nullptr)
+		{
+			delete[] mail_contacts[i];
+		}
+	}
 }
 void Application::main_screen()
 {
@@ -158,13 +174,10 @@ void Application::Compose()
 		cin >> option;
 		if (option == "1")
 		{
-			cout << mail_contacts.at(0) << endl;
-			for (auto it1 = mail_contacts.begin(); it1 != mail_contacts.end(); ++it1)
+			cout << *mail_contacts[0] << endl;
+			for (int i=1;i<m_size_contacts;i++)
 			{
-				if (it1->list_name != "")
-				{
-					cout << it1->name_list() << endl;
-				}
+				cout << mail_contacts[i]->name_list() << endl;
 			}
 			string contact_option;
 			vector<string> contact_mail;
@@ -172,24 +185,21 @@ void Application::Compose()
 			{
 				cout << "which contact would you like:" << endl;
 				cin >> contact_option;
-				if ((find(mail_contacts.begin()->contact_list.begin()->get_name(), mail_contacts.end()->contact_list.begin()->get_name(), contact_option) != mail_contacts.end()->contact_list.begin()->get_name()) || (find(mail_contacts.begin()->contact_list.begin()->get_address(), mail_contacts.end()->contact_list.begin()->get_address(), contact_option) != mail_contacts.end()->contact_list.begin()->get_name()))
+				if (serach_contact(contact_option))
 				{
-					auto it = find(mail_contacts.begin()->contact_list.begin()->get_name(), mail_contacts.end()->contact_list.begin()->get_name(), contact_option);
-					auto it1 = find(mail_contacts.begin()->contact_list.begin(), mail_contacts.end()->contact_list.begin(), it);
-					contact_mail.push_back(it1->get_address());
-					if (it1->get_address() == my_mail)
+					Contact* temp = find_contact(contact_option);
+					contact_mail.push_back(temp->get_address());
+					if (temp->get_address() == my_mail)
 						flag_name = 1;
 				}
-				else if (find(mail_contacts.begin()->name_list(), mail_contacts.end()->name_list(), contact_option) != mail_contacts.end()->name_list())
+				else if (find_rlist(contact_option))
 				{
-					auto it4 = find(mail_contacts.begin()->name_list(), mail_contacts.end()->name_list(), contact_option);
-					auto it5 = find(mail_contacts.begin(), mail_contacts.end(), it4);
-					int size_contacts = it5->contact_list.size();
-					int index1 = distance(mail_contacts.begin(), it5);
-					for (int i = 0; i <= size_contacts; i++)
+					Contacts* temp = find_rlist(contact_option);
+					for (int i = 0; i <= temp->size_list(); i++)
 					{
-						contact_mail.push_back(it5->contact_list.at(i).get_address());
-						if (it5->contact_list.at(i).get_address() == my_mail)
+						Contact* temp1 = temp->contact_list.at(i);
+						contact_mail.push_back(temp1->get_address());
+						if (temp1->get_address() == my_mail)
 							flag_name = 1;
 					}
 				}
@@ -284,21 +294,23 @@ void Application::Compose()
 		else if (option == "4")
 		{
 
-			for (auto it = mail_folders.begin(); it != mail_folders.end(); ++it)
+			for (int i=0;i<m_size_folders; i++)
 			{
-				
-				if (it->m_name=="Sent")
+				Folder* temp = mail_folders[i];
+				if (temp->m_name=="Sent")
 				{
-					Sent_mail* temp = new Sent_mail(date, sent_from, sent_to, subject, content, Mail_Value);
-					it->Add_new_mail(temp);
+					Sent_mail* temp1 = new Sent_mail(date, sent_from, sent_to, subject, content, Mail_Value);
+					//it->Add_new_mail(&Sent_mail(date, sent_from, sent_to, subject, content, Mail_Value));
+					temp->Add_new_mail(temp1);
 					flag = 1;
 				}
 				if (flag_name == 1)
 				{
-					if (it->m_name == "inbox")
+					if (temp->m_name == "inbox")
 					{
-						Recived_mail* temp = new Recived_mail(date, sent_from, sent_to, subject, content, Mail_Value);
-						it->Add_new_mail(temp);
+						Recived_mail* temp1 = new Recived_mail(date, sent_from, sent_to, subject, content, Mail_Value);
+						//it->Add_new_mail(&Recived_mail(date, sent_from, sent_to, subject, content, Mail_Value));
+						temp->Add_new_mail(temp1);
 						flag_name = 0;
 						flag = 1;
 					}
@@ -313,12 +325,14 @@ void Application::Compose()
 		}
 		else if (option == "5")
 		{
-			for (auto it = mail_folders.begin(); it != mail_folders.end(); ++it)
+			for (int i = 0; i < m_size_folders; i++)
 			{
-				if (it->m_name == "Drafts")
+				Folder* temp1 = mail_folders[i];
+				if (temp1->m_name.compare("Drafts"))
 				{
-					Sent_mail* temp = new Sent_mail(date, sent_from, sent_to, subject, content, Mail_Value);
-					it->Add_new_mail(temp);
+					Sent_mail* temp2 = new Sent_mail(date, sent_from, sent_to, subject, content, Mail_Value);
+					//it->Add_new_mail(&Sent_mail(date, sent_from, sent_to, subject, content, Mail_Value));
+					temp1->Add_new_mail(temp2);
 					Mail_Value++;
 				}
 
@@ -340,7 +354,7 @@ void Application::contacts()
 	cin >> contact_option;
 	if (contact_option == "1")
 	{
-		cout << *mail_contacts.begin();
+		cout << *mail_contacts[0];
 	}
 	else if (contact_option == "2")
 	{
@@ -350,20 +364,17 @@ void Application::contacts()
 		cin >> name;
 		cout << "contact address:" << endl;
 		cin >> address;
-		mail_contacts.begin()->Add(name, address);
+		mail_contacts[0]->Add(name, address);
 	}
 	else if (contact_option == "3")
 	{
 		string name = "";
 		cout << "contact name:" << endl;
 		cin >> name;
-		if (find(mail_contacts.begin()->contact_list.begin()->get_name(), mail_contacts.begin()->contact_list.end()->get_name(), name) != mail_contacts.begin()->contact_list.end()->get_name())
+		if (serach_contact(contact_option))
 		{
-			auto it = find(mail_contacts.begin()->contact_list.begin()->get_name(), mail_contacts.end()->contact_list.begin()->get_name(), name);
-			auto it1 = find(mail_contacts.begin()->contact_list.begin(), mail_contacts.end()->contact_list.begin(), it);
-			auto it2 = find(mail_contacts.begin(), mail_contacts.end(), it1);
-			int index1 = distance(mail_contacts.begin(), it2);
-			mail_contacts.at(index1).Remove(it);
+			Contact* temp = find_contact(contact_option);
+			remove_contact(temp);
 		}
 		else
 		{
@@ -390,31 +401,44 @@ void Application::Remove()
 	cin >> print_option;
 	if (print_option == "1")
 	{
+		int flag = 0;
 		int mail_id = 0;
 		cout << "what is the mail id:" << endl;
 		cin >> mail_id;
-		if (find(mail_folders.begin()->mail_list.data()->get_uniqe_id(), mail_folders.end()->mail_list.data()->get_uniqe_id(), mail_id) != mail_folders.end()->mail_list.data()->get_uniqe_id())
+		//Mail* temp = mail_folders.begin()->mail_list.data();
+		for (int i=0; i<m_size_folders; i++)
 		{
-			auto it = find(mail_folders.begin()->mail_list.data()->get_uniqe_id(), mail_folders.end()->mail_list.data()->get_uniqe_id(), mail_id);
-			auto it1 = find(mail_folders.begin()->mail_list.data(), mail_folders.end()->mail_list.data(), it);
-			auto it3 = find(mail_folders.begin()->mail_list, mail_folders.end()->mail_list, it1);
-			auto it4 = find(mail_folders.begin(), mail_folders.end(), it3);
-			auto it2 = find(mail_folders.begin(), mail_folders.end(), "Trash");
-			int index = distance(mail_folders.begin(), it2);
-			int index1 = distance(mail_folders.begin(), it4);
-			Mail* temp;
-			temp = it1;
-			mail_folders.at(index1).Remove(it1);
-			mail_folders.at(index).mail_list.insert(it2->mail_list.begin(), *temp);
+			for (int j = 0; j < mail_folders[i]->size(); j++)
+			{
+				Mail* temp = mail_folders[i]->mail_list[i];
+				if (temp->get_uniqe_id() == mail_id)
+				{
+					for (int k = 0; k < m_size_folders; k++)
+					{
+						if (mail_folders[k]->m_name.compare("Trash"))
+						{
+							mail_folders[k]->Add_new_mail(temp);
+							flag = 1;
+						}
+						if (!mail_folders[k]->m_name.compare("Trash"))
+						{
+							mail_folders[k]->Remove(temp);
+							
+						}
+					}
+
+				}
+			}
+
 		}
-		else
+		if (flag == 0)
 		{
-			cout << "mail do no exict" << endl;
-			Print();
+			cout << "mail  do no exict" << endl;
+			Move();
 		}
 
 	}
-	else if (print_option == "2")
+	else if (print_option.compare("2"))
 	{
 		main_screen();
 	}
@@ -426,36 +450,34 @@ void Application::Remove()
 }
 void Application::List(string list_name)
 {
-	int size=mail_folders.size();
-	if (size > 10)
+	for (int i = 0; i < m_size_folders; i++)
 	{
-		for (auto it = mail_folders.begin(); it != mail_folders.end(); ++it)
+		if (mail_folders[i]->m_name == list_name)
 		{
-			if (it->m_name == list_name)
+			int size = mail_folders[i]->size();
+			if (size > 10)
 			{
+				for (int k = 0; k < 10; k++)
+				{
+					Mail* temp = mail_folders[i]->mail_list[k];
+					cout << "Date:" << temp->get_Date() << endl;
+					cout << "Sent from:" << temp->get_Send_From() << endl;
 
-				for (auto it1 = it->mail_list.begin(); it1 < it->mail_list.begin() + 10; ++it1)
-				{
-					cout << "Date:" << it1->get_Date() << endl;
-					cout << "Sent from:" << it1->get_Send_From() << endl;
-					cout << "Subject:" << it1->get_Subject() << endl;
-				}
+					cout << "Subject:" << temp->get_Subject() << endl;
+					
+				}	
+
 			}
-		}
-	}
-	else
-	{
-		for (auto it = mail_folders.begin(); it != mail_folders.end(); ++it)
-		{
-			if (it->m_name == "inbox")
+			else
 			{
-				for (auto it1 = it->mail_list.begin(); it1 < it->mail_list.begin() + size; ++it1)
+				for (int k = 0; k < size; k++)
 				{
-					cout << "Date:" << it1->get_Date() << endl;
-					cout << "Sent from:" << it1->get_Send_From() << endl;
-					cout << "Subject:" << it1->get_Subject() << endl;
+					Mail* temp = mail_folders[i]->mail_list[k];
+					cout << "Date:" << temp->get_Date() << endl;
+					cout << "Sent from:" << temp->get_Send_From() << endl;
+					cout << "Subject:" << temp->get_Subject() << endl;
 				}
-				cout << "no more mails" << endl;
+					cout << "no more mails" << endl;
 			}
 		}
 	}
@@ -476,20 +498,21 @@ void Application::Search()
 		string mail_option;
 		cout << "please enter name or subject" << endl;
 		cin >> mail_option;
-		for (auto it = mail_folders.begin(); it != mail_folders.end(); ++it)
+		for (int i = 0; i < m_size_folders; i++)
 		{
-			for (auto it1 = it->mail_list.begin(); it1 != it->mail_list.end(); ++it1)
+			for (int j=0; j<mail_folders[i]->size();j++)
 			{
-				if (it1->get_Subject() == mail_option || it1->get_Send_To()->compare(mail_option))
+				Mail* temp = mail_folders[i]->mail_list[j];
+				if (temp->get_Subject() == mail_option || temp->get_Send_To()->compare(mail_option))
 				{
-					cout << "Date:" << it1->get_Date() << endl;
-					cout << "Sent from:" << it1->get_Send_From() << endl;
-					cout << "Subject:" << it1->get_Subject() << endl;
+					cout << "Date:" << temp->get_Date() << endl;
+					cout << "Sent from:" << temp->get_Send_From() << endl;
+					cout << "Subject:" << temp->get_Subject() << endl;
 				}
 			}
 		}
 	}
-	else if (search_option == "1")
+	else if (search_option == "2")
 	{
 		main_screen();
 	}
@@ -509,36 +532,41 @@ void Application::Move()
 	cin >> move_option;
 	if (move_option == "1")
 	{
+		int flag = 0;
 		string folder_name = "";
 		int mail_id = 0;
 		cout << "what is the mail id:" << endl;
 		cin >> mail_id;
 		cout << "what is the folder to move:" << endl;
 		cin >> folder_name;
-		if (find(mail_folders.begin()->mail_list.data()->get_uniqe_id(), mail_folders.end()->mail_list.data()->get_uniqe_id(), mail_id) != mail_folders.end()->mail_list.data()->get_uniqe_id())
+		for (int i = 0; i < m_size_folders; i++)
 		{
-			if (find(mail_folders.begin(), mail_folders.end(), folder_name) != mail_folders.end())
+			for (int j = 0; j < mail_folders[i]->size(); j++)
 			{
-				auto it = find(mail_folders.begin()->mail_list.data()->get_uniqe_id(), mail_folders.end()->mail_list.data()->get_uniqe_id(), mail_id);
-				auto it1 = find(mail_folders.begin()->mail_list.data(), mail_folders.end()->mail_list.data(), it);
-				auto it3 = find(mail_folders.begin()->mail_list, mail_folders.end()->mail_list, it1);
-				auto it4 = find(mail_folders.begin(), mail_folders.end(), it3);
-				auto it2 = find(mail_folders.begin(), mail_folders.end(), folder_name);
-				int index = distance(mail_folders.begin(), it2);
-				int index1 = distance(mail_folders.begin(), it4);
-				Mail* temp;
-				temp = it1;
-				mail_folders.at(index1).Remove(it1);
-				mail_folders.at(index).mail_list.insert(it2->mail_list.begin(), *temp);
+				Mail* temp = mail_folders[i]->mail_list[j];
+				if (temp->get_uniqe_id() == mail_id)
+				{
+					for (int k = 0; k < m_size_folders; k++)
+					{
+						if (mail_folders[k]->m_name == folder_name)
+						{
+							mail_folders[k]->Add_new_mail(temp);
+							flag = 1;
+						}
+						if (mail_folders[k]->m_name != folder_name)
+						{
+							mail_folders[k]->Remove(temp);
+							flag = 1;
+						}
+					}
+				}
+		
 			}
-			else
-			{
-				cout << "folder do not exist" << endl;
-			}
+
 		}
-		else
+		if (flag == 0)
 		{
-			cout << "mail do no exict" << endl;
+			cout << "mail or folder do no exict" << endl;
 			Move();
 		}
 	}
@@ -551,29 +579,31 @@ void Application::Move()
 void Application::More(int flag,string folder_name)
 {
 
-	for (auto it = mail_folders.begin(); it != mail_folders.end(); ++it)
+	for (int i = 0; i < m_size_folders; i++)
 	{
-		if (it->m_name == folder_name)
+		if (mail_folders[i]->m_name == folder_name)
 		{
-			int folder_size = it->mail_list.size();
-			if (folder_size <= ((flag+1) * 10))
+			int folder_size = mail_folders[i]->size();
+			if (folder_size <= ((flag + 1) * 10))
 			{
-				for (auto it1 = it->mail_list.begin() + 10 * flag; it1 < it->mail_list.begin() + 10 * (flag + 1); ++it1)
+				for (int j = 0 + 10 * flag; j < 10 * (flag + 1); j++)
 				{
-					cout << "Date:" << it1->get_Date() << endl;
-					cout << "Sent from:" << it1->get_Send_From() << endl;
-					cout << "Subject:" << it1->get_Subject() << endl;
-					cout << "Uniqe id:" << it1->get_uniqe_id() << endl;
+					Mail* temp = mail_folders[i]->mail_list[j];
+					cout << "Date:" << temp->get_Date() << endl;
+					cout << "Sent from:" << temp->get_Send_From() << endl;
+					cout << "Subject:" << temp->get_Subject() << endl;
+					cout << "Uniqe id:" << temp->get_uniqe_id() << endl;
 				}
 			}
 			else
 			{
-				for (auto it1 = it->mail_list.begin() + 10 * flag; it1 < it->mail_list.begin() + folder_size; ++it1)
+				for (int j = 0 + 10 * flag; j < mail_folders[i]->size(); j++)
 				{
-					cout << "Date:" << it1->get_Date() << endl;
-					cout << "Sent from:" << it1->get_Send_From() << endl;
-					cout << "Subject:" << it1->get_Subject() << endl;
-					cout << "Uniqe id:" << it1->get_uniqe_id() << endl;
+					Mail* temp = mail_folders[i]->mail_list[j];
+					cout << "Date:" << temp->get_Date() << endl;
+					cout << "Sent from:" << temp->get_Send_From() << endl;
+					cout << "Subject:" << temp->get_Subject() << endl;
+					cout << "Uniqe id:" << temp->get_uniqe_id() << endl;
 				}
 				cout << "no more mails" << endl;
 			}
@@ -594,10 +624,10 @@ void Application::CD()
 		string folder_name = "";
 		cout << "what is the folder to move:" << endl;
 		cin >> folder_name;
-		if (find(mail_folders.begin(), mail_folders.end(), folder_name) != mail_folders.end())
+		if (find_folder(folder_name))
 		{
-			auto it2 = find(mail_folders.begin(), mail_folders.end(), folder_name);
-			List(it2->m_name);
+			Folder* temp = find_folder(folder_name);
+			List(temp->m_name);
 			string chose_option;
 			cout << "1. More" << endl;
 			cout << "2. Remove" << endl;
@@ -611,7 +641,7 @@ void Application::CD()
 			{
 				if (chose_option == "1")
 				{
-					More(more_flag, it2->m_name);
+					More(more_flag, temp->m_name);
 					more_flag++;
 				}
 				if (chose_option == "2")
@@ -629,7 +659,7 @@ void Application::CD()
 
 				else if (chose_option == "5")
 				{
-					List(it2->m_name);
+					List(temp->m_name);
 				}
 				else if (chose_option == "6")
 				{
@@ -683,10 +713,10 @@ void Application::MkDir()
 		string folder_name;
 		cout << "enter folder name:" << endl;
 		cin >> folder_name;
-		if (folder_name != mail_folders.data()->m_name)
+		if (!find_folder(folder_name))
 		{
-			Folder* temp = new Folder(folder_name);
-			mail_folders.push_back(*temp);
+			Folder* temp = find_folder(folder_name);
+			push_folder(temp);
 		}
 		else
 		{
@@ -712,70 +742,67 @@ void Application::RmDir()
 		string folder_name;
 		cout << "enter folder name:" << endl;
 		cin >> folder_name;
-		if (folder_name != "Trash" && folder_name != "Starred" && folder_name != "Drafts" && folder_name != "Sent" && folder_name != "Inbox" && find(mail_folders.begin()->m_name, mail_folders.end()->m_name, folder_name) != mail_folders.end()->m_name)
+		if (folder_name != "Trash" && folder_name != "Starred" && folder_name != "Drafts" && folder_name != "Sent" && folder_name != "Inbox" && find_folder(folder_name))
 		{
-			auto it2 = find(mail_folders.begin(), mail_folders.end(), folder_name);
-			int index = distance(mail_folders.begin(), it2);
-			auto it = find(mail_folders.begin(), mail_folders.end(), "Trash");
-			int index1 = distance(mail_folders.begin(), it);
-			for (int i = 0; i < it2->mail_list.size(); i++)
+			Folder* temp = find_folder(folder_name);
+			Folder* temp1 = find_folder("Trash");
+			for (int i=temp->size()-1; i >=0; i--)
 			{
-				Mail* temp;
-				temp = &it2->mail_list.back();
-				it2->mail_list.pop_back();
-				mail_folders.at(index1).mail_list.insert(it->mail_list.begin(), *temp);
+				Mail* temp2;
+				temp2 = temp->mail_list[i];
+				temp->Remove(temp2);
+				temp1->Add_new_mail(temp2);
 			}
-			mail_folders.erase(it2);
-			
-
+			pop_folder(temp);
 		}
 		else if (folder_name == "Trash")
 		{
-			auto it = find(mail_folders.begin(), mail_folders.end(), "Trash");
-			int index = distance(mail_folders.begin(), it);
-			mail_folders.at(index).mail_list.clear();
+			Folder* temp1 = find_folder("Trash");
+			for (int i = temp1->size() - 1; i >= 0; i--)
+			{
+				Mail* temp2;
+				temp2 = temp1->mail_list[i];
+				temp1->Remove(temp2);
+			}
 		}
 		else if (folder_name == "Starred")
 		{
-			auto it2 = find(mail_folders.begin(), mail_folders.end(), "Starred");
-			int index = distance(mail_folders.begin(), it2);
-			auto it = find(mail_folders.begin(), mail_folders.end(), "Trash");
-			int index1 = distance(mail_folders.begin(), it);
-			for (int i = 0; i < it2->mail_list.size(); i++)
+			Folder* temp = find_folder("Starred");
+			Folder* temp1 = find_folder("Trash");
+			for (int i = temp->size() - 1; i >= 0; i--)
 			{
-				Mail* temp;
-				temp = &it2->mail_list.back();
-				it2->mail_list.pop_back();
-				mail_folders.at(index1).mail_list.insert(it->mail_list.begin(), *temp);
+				Mail* temp2;
+				temp2 = temp->mail_list[i];
+				temp->Remove(temp2);
+				temp1->Add_new_mail(temp2);
 			}
+
 		}
 		else if (folder_name == "Sent")
 		{
-			auto it2 = find(mail_folders.begin(), mail_folders.end(), "Sent");
-			int index = distance(mail_folders.begin(), it2);
-			auto it = find(mail_folders.begin(), mail_folders.end(), "Trash");
-			int index1 = distance(mail_folders.begin(), it);
-			for (int i = 0; i < it2->mail_list.size(); i++)
+			Folder* temp = find_folder("Sent");
+			Folder* temp1 = find_folder("Trash");
+			for (int i = temp->size() - 1; i >= 0; i--)
 			{
-				Mail* temp;
-				temp = &it2->mail_list.back();
-				it2->mail_list.pop_back();
-				mail_folders.at(index1).mail_list.insert(it->mail_list.begin(), *temp);
+				Mail* temp2;
+				temp2 = temp->mail_list[i];
+				temp->Remove(temp2);
+				temp1->Add_new_mail(temp2);
 			}
+
 		}
 		else if (folder_name == "Inbox")
 		{
-			auto it2 = find(mail_folders.begin(), mail_folders.end(), "Inbox");
-			int index = distance(mail_folders.begin(), it2);
-			auto it = find(mail_folders.begin(), mail_folders.end(), "Trash");
-			int index1 = distance(mail_folders.begin(), it);
-			for (int i = 0; i < it2->mail_list.size(); i++)
+			Folder* temp = find_folder("Inbox");
+			Folder* temp1 = find_folder("Trash");
+			for (int i = temp->size() - 1; i >= 0; i--)
 			{
-				Mail* temp;
-				temp = &it2->mail_list.back();
-				it2->mail_list.pop_back();
-				mail_folders.at(index1).mail_list.insert(it->mail_list.begin(), *temp);
+				Mail* temp2;
+				temp2 = temp->mail_list[i];
+				temp->Remove(temp2);
+				temp1->Add_new_mail(temp2);
 			}
+
 		}
 		else
 		{
@@ -790,9 +817,9 @@ void Application::RmDir()
 }
 void Application::ListDir()
 {
-	for (auto it = mail_folders.begin(); it != mail_folders.end(); ++it)
+	for (int i = 0; i < m_size_folders ; i++)
 	{
-		cout << it->m_name << endl;
+		cout << mail_folders[i]->m_name << endl;
 	}
 }
 void Application::Print()
@@ -803,16 +830,23 @@ void Application::Print()
 	cin >> print_option;
 	if (print_option == "1")
 	{
+		int flag = 0;
 		int mail_id=0;
 		cout << "what is the mail id:" << endl;
 		cin >> mail_id;
-		if (find(mail_folders.begin()->mail_list.data()->get_uniqe_id(), mail_folders.end()->mail_list.data()->get_uniqe_id(), mail_id) != mail_folders.end()->mail_list.data()->get_uniqe_id())
+		for (int i = 0; i < m_size_folders; i++)
 		{
-			auto it = find(mail_folders.begin()->mail_list.data()->get_uniqe_id(), mail_folders.end()->mail_list.data()->get_uniqe_id(), mail_id);
-			auto it1 = find(mail_folders.begin()->mail_list.data(), mail_folders.end()->mail_list.data(), it);
-			cout << *it1 << endl;
+			for (int j = 0; j < mail_folders[i]->size(); j++)
+			{
+				Mail* temp = mail_folders[i]->mail_list[j];
+				if (temp->get_uniqe_id() == mail_id)
+				{
+					cout << *temp << endl;
+					flag = 1;
+				}
+			}
 		}
-		else
+		if(flag==0)
 		{
 			cout << "mail do no exict" << endl;
 			Print();
@@ -836,12 +870,11 @@ void Application::rlist()
 	cin >> rlist_option;
 	if (rlist_option == "1")
 	{
-		
-		for (auto it = mail_contacts.begin(); it != mail_contacts.end(); ++it)
+		for (int i = 0; i < m_size_folders; i++)
 		{
-			if (it->name_list() != "")
+			if (mail_folders[i]->m_name != "")
 			{
-				cout << it->name_list() << endl;
+				cout << mail_folders[i]->m_name << endl;
 			}
 		}
 	}
@@ -850,11 +883,10 @@ void Application::rlist()
 		string rlist_name;
 		cout << "enter rlist name:" << endl;
 		cin >> rlist_name;
-		if (find(mail_contacts.begin()->name_list(), mail_contacts.end()->name_list(), rlist_name)== mail_contacts.end()->name_list())
+		if (!find_rlist(rlist_name))
 		{
 			Rlist* temp = new Rlist(rlist_name);
-			mail_contacts.push_back(*temp);
-
+			push_contacts(temp);
 		}
 		else
 		{
@@ -867,11 +899,10 @@ void Application::rlist()
 		string rlist_name1;
 		cout << "enter rlist name:" << endl;
 		cin >> rlist_name1;
-		if (find(mail_contacts.begin()->name_list(), mail_contacts.end()->name_list(), rlist_name1) == mail_contacts.end()->name_list())
+		if (find_rlist(rlist_name1))
 		{
-			auto it = find(mail_contacts.begin()->name_list(), mail_contacts.end()->name_list(), rlist_name1);
-			auto it1 = find(mail_contacts.begin(), mail_contacts.end(), it);
-			mail_contacts.erase(it1);
+			Contacts* temp = find_rlist(rlist_name1);
+			pop_contacts(temp);
 		}
 		else
 		{
@@ -884,17 +915,16 @@ void Application::rlist()
 		string rlist_name2;
 		cout << "enter rlist name:" << endl;
 		cin >> rlist_name2;
-		if (find(mail_contacts.begin()->name_list(), mail_contacts.end()->name_list(), rlist_name2) == mail_contacts.end()->name_list())
+		if (find_rlist(rlist_name2))
 		{
-			auto it = find(mail_contacts.begin()->name_list(), mail_contacts.end()->name_list(), rlist_name2);
-			auto it1 = find(mail_contacts.begin(), mail_contacts.end(), it);
+			Contacts* temp = find_rlist(rlist_name2);
 			string name = "";
 			string address = "";
 			cout << "contact name:" << endl;
 			cin >> name;
 			cout << "contact address:" << endl;
 			cin >> address;
-			it1->Add(name, address);
+			temp->Add(name, address);
 		}
 		else
 		{
@@ -902,30 +932,26 @@ void Application::rlist()
 			rlist();
 		}
 	}
-	else if (rlist_option == "5")
+	else if (rlist_option.compare("5"))
 	{
 		string rlist_name2;
 		cout << "enter rlist name:" << endl;
 		cin >> rlist_name2;
-		if (find(mail_contacts.begin()->name_list(), mail_contacts.end()->name_list(), rlist_name2) == mail_contacts.end()->name_list())
+		if (find_rlist(rlist_name2))
 		{
-			auto it = find(mail_contacts.begin()->name_list(), mail_contacts.end()->name_list(), rlist_name2);
-			auto it1 = find(mail_contacts.begin(), mail_contacts.end(), it);
+			Contacts* temp = find_rlist(rlist_name2);
 			string name = "";
 			string address = "";
 			cout << "contact name:" << endl;
 			cin >> name;
 			cout << "contact address:" << endl;
 			cin >> address;
-			if (find(it1->contact_list.begin()->get_name(), it1->contact_list.end()->get_name(), name) != mail_contacts.begin()->contact_list.end()->get_name())
+			if (find_contact(name))
 			{
-				auto it2 = find(it1->contact_list.begin()->get_name(), it1->contact_list.end()->get_name(), name);
-				auto it3 = find(mail_contacts.begin()->contact_list.begin(), mail_contacts.end()->contact_list.begin(), it2);
-				if (it3->get_address() == address)
+				Contact* temp1 = find_contact(name);
+				if (temp1->get_address() == address)
 				{
-					auto it4 = find(mail_contacts.begin(), mail_contacts.end(), it3);
-					int index1 = distance(mail_contacts.begin(), it4);
-					mail_contacts.at(index1).Remove(it);
+					temp->Remove(temp1);
 				}
 				else
 				{
@@ -959,13 +985,13 @@ void Application::rlist()
 }
 void Application::seralization(ofstream& ofs)
 {
-	for (auto it = mail_folders.begin(); it != mail_folders.end(); ++it)
+	for (int i = 0; i < m_size_folders; i++)
 	{
-		it->seralization(ofs);
+		mail_folders[i]->seralization(ofs);
 	}
-	for (auto it = mail_contacts.begin(); it != mail_contacts.end(); ++it)
+	for (int j=0; j< m_size_contacts;j++)
 	{
-		it->seralization(ofs);
+		mail_contacts[j]->seralization(ofs);
 	}
 	ofs << "mail value:" << Mail_Value << endl;
 
@@ -982,11 +1008,11 @@ void Application::deseralization(ifstream& ifs)
 			size_t pos = single_line.find("Folder:");
 			string str_line = single_line.substr(pos);
 			Folder* temp = new Folder(str_line);
-			mail_folders.emplace(mail_folders.begin(), temp);
+			push_folder(temp);
 			getline(ifs, single_line);
 			string date="";
-			string** sent_from;
-			string** sent_to;
+			string** sent_from=NULL;
+			string** sent_to=NULL;
 			string subject="";
 			string content="";
 			int uniqe_d=0;
@@ -1050,7 +1076,7 @@ void Application::deseralization(ifstream& ifs)
 					{
 						if ((&sent_to1.at(j) != ",") && (sent_to1.at(j) != '\n'))
 						{
-							sent_from[place]->append(&sent_to1.at(j));
+							sent_to[place]->append(&sent_to1.at(j));
 						}
 						if ((&sent_to1.at(j) == ","))
 						{
@@ -1079,25 +1105,27 @@ void Application::deseralization(ifstream& ifs)
 					size_t pos = single_line.find("uniq id:");
 					uniqe_d = stoi(single_line.substr(pos));
 				}
-				if (mail_folders.at(0).m_name != "Sent")
+				if (mail_folders[0]->m_name != "Sent")
 				{
 					for (int i = 0; i <= size2; i++)
 					{
-						if (sent_to[i] == &my_mail)
+						if (sent_to[i]->compare(my_mail))
 						{
 							Recived_mail* temp = new Recived_mail(date, sent_from, sent_to, subject, content, uniqe_d);
-							mail_folders.at(0).Add_old_mail(temp);
+							//mail_folders.at(0).Add_old_mail(&Recived_mail(date, sent_from, sent_to, subject, content, uniqe_d));
+							mail_folders[0]->push_back(temp);
 						}
 					}
 				}
-				if (mail_folders.at(0).m_name != "Inbox")
+				if (mail_folders[0]->m_name != ("Inbox"))
 				{
 					for (int i = 0; i <= size2; i++)
 					{
-						if (sent_to[i] == &my_mail)
+						if (sent_to[i]->compare(my_mail))
 						{
 							Sent_mail* temp = new Sent_mail(date, sent_from, sent_to, subject, content, uniqe_d);
-							mail_folders.at(0).Add_old_mail(temp);
+							//mail_folders.at(0).Add_old_mail(&Sent_mail(date, sent_from, sent_to, subject, content, uniqe_d));
+							mail_folders[0]->push_back(temp);
 						}
 					}
 				}
@@ -1107,7 +1135,8 @@ void Application::deseralization(ifstream& ifs)
 		}
 		if (single_line.rfind("contacts:", 0))
 		{
-			mail_contacts.push_back(Contacts());
+			Contacts* temp = new Contacts();
+			push_contacts(temp);
 			oldpos = ifs.tellg();
 			getline(ifs, single_line);
 			while (!single_line.rfind("Folder:", 0)  && !single_line.rfind("contact list:", 0))
@@ -1130,7 +1159,7 @@ void Application::deseralization(ifstream& ifs)
 					address.append(&single_line.at(i));
 
 				}
-				mail_contacts.at(mail_contacts.size()).Add(name, address);
+				mail_contacts[m_size_contacts]->Add(name, address);
 				oldpos = ifs.tellg();
 				getline(ifs, single_line);
 			}
@@ -1140,7 +1169,8 @@ void Application::deseralization(ifstream& ifs)
 		{
 			size_t pos = single_line.find("contact list:");
 			string str_line = single_line.substr(pos);
-			mail_contacts.push_back(Rlist(str_line));
+			Rlist* temp = new Rlist(str_line);
+			push_contacts(temp);
 			oldpos = ifs.tellg();
 			getline(ifs, single_line);
 			while (!single_line.rfind("Folder:", 0) && !single_line.rfind("contacts:", 0))
@@ -1163,7 +1193,7 @@ void Application::deseralization(ifstream& ifs)
 					address.append(&single_line.at(i));
 
 				}
-				mail_contacts.at(mail_contacts.size()).Add(name, address);
+				mail_contacts[m_size_contacts]->Add(name, address);
 				oldpos = ifs.tellg();
 				getline(ifs, single_line);
 			}
@@ -1176,4 +1206,207 @@ void Application::deseralization(ifstream& ifs)
 			Mail_Value= stoi(single_line.substr(pos));
 		}
 	}
+}
+bool  Application::serach_contact(string name)
+{
+	for (int i = 0; i < m_size_contacts; i++)
+	{
+		if (mail_contacts[i]->contact_exsit(name))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+Contact*  Application::find_contact(string name)
+{
+	Contact* temp;
+	temp = mail_contacts[0]->find_contact(name);
+	return temp;
+}
+Contacts* Application::find_rlist(string name)
+{
+	for (int i = 1; m_size_contacts; i++)
+	{
+		if (mail_contacts[i]->name_list() == name)
+		{
+			return mail_contacts[i];
+		}
+	}
+}
+void Application::remove_contact(Contact* c)
+{
+	for (int i = 0; i < m_size_contacts; i++)
+	{
+		if (mail_contacts[i]->contact_exsit(c->get_name()))
+		{
+			mail_contacts[i]->Remove(c);
+		}
+	}
+}
+Folder* Application::find_folder(string name)
+{
+	for (int i = 0; i < m_size_folders; i++)
+	{
+		if (mail_folders[i]->m_name == name)
+		{
+			return mail_folders[i];
+		}
+	}
+}
+void Application::push_folder(Folder* c)
+{
+	if (!folder_isFull())
+	{
+		if (folder_isEmpty())
+		{
+			mail_folders[0] = c;
+			m_top_folders++;
+		}
+		else
+		{
+			Folder** temp = new Folder * [m_size_folders];
+			for (int i = 0; i < m_size_folders; i++) {
+				temp[i] = mail_folders[i];
+			}
+			for (int i = 0; i < m_size_folders; i++) {
+				mail_folders[i + 1] = temp[i];
+			}
+			mail_folders[0] = (c);
+			m_top_folders++;
+		}
+		
+	}
+
+
+	else
+	{
+	Folder** temp = new Folder * [m_size_folders];
+	for (int i = 0; i < m_size_folders; i++) {
+		temp[i] = (mail_folders[i]);
+	}
+	mail_folders = new  Folder * [m_size_folders + 1];;
+	for (int j = 0; j < m_size_folders; j++) {
+		mail_folders[j + 1] = temp[j];
+	}
+	mail_folders[0] = c;
+	m_size_folders++;
+	m_top_folders++;
+	}
+}
+void Application::push_contacts(Contacts* c)
+{
+	if (!contacts_isFull())
+	{
+		if (contacts_isEmpty())
+		{
+			mail_contacts[0] = c;
+			m_top_contacts++;
+		}
+		else
+		{
+			Contacts** temp = new Contacts * [m_size_folders];
+			for (int i = 0; i < m_size_folders; i++) {
+				temp[i] = mail_contacts[i];
+			}
+			for (int i = 0; i < m_size_folders; i++) {
+				mail_contacts[i + 1] = temp[i];
+			}
+			mail_contacts[0] = (c);
+			m_top_contacts++;
+		}
+
+	}
+
+
+	else
+	{
+		Contacts** temp = new Contacts * [m_size_folders];
+		for (int i = 0; i < m_size_folders; i++) {
+			temp[i] = (mail_contacts[i]);
+		}
+		mail_contacts = new  Contacts * [m_size_folders + 1];;
+		for (int j = 0; j < m_size_folders; j++) {
+			mail_contacts[j + 1] = temp[j];
+		}
+		mail_contacts[0] = c;
+		m_size_contacts++;
+		m_top_contacts++;
+	}
+}
+void Application::pop_contacts(Contacts* folder)
+{
+	unsigned index = 0;
+	if (contacts_isEmpty())
+	{
+		cout << "contacts nothing to pop." << endl;
+	}
+	else
+	{
+		for (int i = 0; i < m_size_folders; i++)
+		{
+			if (mail_contacts[i] == folder)
+			{
+				index = i;
+
+				break;
+			}
+		}
+		for (unsigned j = index; j < m_size_folders; j++)
+		{
+			mail_contacts[j] = mail_contacts[j + 1];
+		}
+		m_size_contacts--;
+		m_top_contacts--;
+	}
+}
+void Application::pop_folder(Folder* folder)
+{
+	unsigned index = 0;
+	if (folder_isEmpty())
+	{
+		cout << "folder nothing to pop." << endl;
+	}
+	else
+	{
+		for (int i = 0; i < m_size_folders; i++)
+		{
+			if (mail_folders[i] == folder)
+			{
+				index = i;
+
+				break;
+			}
+		}
+		for (unsigned j = index; j < m_size_folders; j++)
+		{
+			mail_folders[j] = mail_folders[j + 1];
+		}
+		m_size_folders--;
+		m_top_folders--;
+	}
+}
+bool Application::folder_isFull() const
+{
+	return m_size_folders == m_top_folders;
+}
+bool Application::folder_isEmpty()
+{
+	return m_size_folders == 0;
+}
+unsigned Application::folder_size()const
+{
+	return m_size_folders;
+}
+bool Application::contacts_isFull() const
+{
+	return  m_size_contacts == m_top_contacts;
+}
+bool Application::contacts_isEmpty()
+{
+	return m_size_contacts == 0;
+}
+unsigned Application::contacts_size()const
+{
+	return m_size_contacts;
 }
