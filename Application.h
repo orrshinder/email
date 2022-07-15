@@ -40,12 +40,32 @@ public:
 	void Print();
 	void seralization(ofstream& ofs);
 	void deseralization(ifstream& ofs);
+	bool serach_contact(string name);
+	Contact* find_contact(string name);
+	Contacts* find_rlist(string name);
+	void remove_contact(Contact* c);
+	Folder* find_folder(string name);
+	void push_folder(Folder* c);
+	void pop_folder(Folder* mail);
+	bool folder_isFull() const;
+	bool folder_isEmpty();
+	unsigned folder_size()const;
+	unsigned contacts_size()const;
+	bool contacts_isEmpty();
+	bool contacts_isFull() const;
+	void push_contacts(Contacts* c);
+	void pop_contacts(Contacts* folder);
 
 protected:
-	vector<Folder> mail_folders;
-	vector<Contacts> mail_contacts;
+	Folder** mail_folders;
+	Contacts** mail_contacts;
 	const string my_mail = "orrshinder@gmail.com";
-	static int Mail_Value;
+	//static int Mail_Value;
+	int m_size_contacts;  
+	int m_top_contacts;   
+	int m_size_folders;  
+	int m_top_folders;   
+	int Mail_Value;
 
 };
 
