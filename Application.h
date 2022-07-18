@@ -10,6 +10,8 @@
 #include "Mail.h"
 #include <fstream>
 #include <ostream>
+#include <regex>
+#include <typeinfo>
 using namespace std;
 #define _CRTDBG_MAP_ALLOC
 #define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
@@ -45,6 +47,7 @@ public:
 	Contacts* find_rlist(string name);
 	void remove_contact(Contact* c);
 	Folder* find_folder(string name);
+	bool serach_folder(string name);
 	void push_folder(Folder* c);
 	void pop_folder(Folder* mail);
 	bool folder_isFull() const;
@@ -55,17 +58,21 @@ public:
 	bool contacts_isFull() const;
 	void push_contacts(Contacts* c);
 	void pop_contacts(Contacts* folder);
+	bool isValid(const string& email);
+	void start_mail_check();
+	bool serach_rlist(string name);
 
 protected:
 	Folder** mail_folders;
 	Contacts** mail_contacts;
-	const string my_mail = "orrshinder@gmail.com";
+	string my_mail = "orrshinder@gmail.com";
 	//static int Mail_Value;
 	int m_size_contacts;  
 	int m_top_contacts;   
 	int m_size_folders;  
 	int m_top_folders;   
 	int Mail_Value;
+	string m_date;
 
 };
 
