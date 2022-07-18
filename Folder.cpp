@@ -6,14 +6,19 @@ Folder::Folder(string name)
 {
 	m_name = name;
 	mail_list = new Mail * [0];
+	mail_list = NULL;
 	m_size = 0;
 	m_top = 0;
 }
 Folder::~Folder()
 {
-	for (int i = 0; i < m_size; i++)
+	
+	if (!this->isEmpty())
 	{
-		delete mail_list[i];
+		for (int i = 0; i < m_top; i++)
+		{
+			delete mail_list[i];
+		}
 	}
 }
 
@@ -47,7 +52,7 @@ void Folder::Remove(Mail* mail)
 }
 void  Folder::seralization(ofstream& ofs)
 {
-	ofs <<"Folder:" << this->m_name << endl;
+	ofs <<"Folder:" << " " << this->m_name << endl;
 	for (int i = 0; i < m_top; i++)
 	{ 
 		Mail* temp = mail_list[i];
@@ -105,7 +110,6 @@ void Folder::push(Mail* c)
 			mail_list[j + 1] = temp[j];
 		}
 		mail_list[0] = c;
-		//delete temp;
 		m_size = m_size + 1;
 		m_top++;
 	}
@@ -151,7 +155,7 @@ bool Folder::isEmpty()
 {
 	return m_top == 0;
 }
-bool Folder::isFull() const // returns true if stack is full
+bool Folder::isFull() const 
 {
 	return m_size == m_top;
 }
