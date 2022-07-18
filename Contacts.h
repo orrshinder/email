@@ -22,11 +22,10 @@ public:
 	friend class Contact;
 	friend class Application;
 	Contacts();
-	Contacts(string name);
 	~Contacts();
 	void Remove(Contact* person);
 	void Add(string name, string address);
-	string name_list() const;
+	virtual string name_list() const;
 	void seralization(ofstream& ofs);
 	friend ostream& operator<<(ostream& os, const Contacts& c);
 	bool operator ==(const Contacts* other);
@@ -41,12 +40,14 @@ protected:
 class Rlist:public Contacts
 {
 public:
-	Rlist(string name):Contacts(name){};
+	Rlist(string name);
 	~Rlist();
 	void delete_contact(Contact* person);
+	virtual string name_list() const;
 	void AddToList(string name, string address);
 	void RemoveFromList(string name, string address);
 	void seralization(ofstream& ofs);
+
 };
 #endif
 
