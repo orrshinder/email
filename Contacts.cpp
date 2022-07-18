@@ -3,13 +3,8 @@
 
 Contacts::Contacts()
 {
-	contact_list.resize(0);
+	//contact_list.resize(0);
 	list_name = "";
-}
-Contacts::Contacts(string name)
-{
-	contact_list.resize(0);
-	list_name = name;
 }
 string Contacts::name_list()const
 {
@@ -60,10 +55,25 @@ Rlist::~Rlist()
 {
 	contact_list.~vector();
 }
+string Rlist::name_list()const
+{
+	return list_name;
+}
+Rlist::Rlist(string name):Contacts()
+{
+	list_name=name;
+}
 
 void Contacts::seralization(ofstream& ofs)
 {
-	ofs << "contacts:" << endl;
+	if (name_list() == "")
+	{
+		ofs << "contacts:" << endl;
+	}
+	else
+	{
+		ofs << "contact list:" << name_list() << endl;
+	}
 	for (auto it = contact_list.begin(); it != contact_list.end(); ++it)
 	{
 		Contact* temp = *it;
